@@ -1,0 +1,17 @@
+{
+  "name": "nakama",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "docker compose up -d",
+    "restart": "docker compose restart nakama",
+    "build-and-restart": "cd ./runtime && pnpm build && cp ./build/index.js ../data/modules/build/index.js && cd .. && docker compose restart nakama"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

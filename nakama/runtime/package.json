@@ -1,0 +1,33 @@
+{
+	"name": "ts",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "rollup -c",
+		"type-check": "tsc --noEmit",
+		"codegen": "kysely-codegen"
+	},
+	"type": "module",
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"nakama-runtime": "github:heroiclabs/nakama-common"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.23.2",
+		"@babel/plugin-external-helpers": "^7.22.5",
+		"@babel/preset-env": "^7.23.2",
+		"@babel/preset-typescript": "^7.23.2",
+		"@rollup/plugin-babel": "^6.0.4",
+		"@rollup/plugin-commonjs": "^25.0.7",
+		"@rollup/plugin-json": "^6.0.1",
+		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@rollup/plugin-typescript": "^11.1.5",
+		"rollup": "^4.1.5",
+		"tslib": "^2.6.2",
+		"typescript": "^5.2.2",
+		"shared": "workspace:*"
+	}
+}

@@ -1,0 +1,26 @@
+name: "nakama-node-1"
+data_dir: "./data/"
+
+database:
+  address: 
+  - "root@cockroachdb:26257"
+
+logger:
+  stdout: false
+  level: "info"
+  file: "/nakama/data/logfile.log"
+
+session:
+  token_expiry_sec: 3600
+  refresh_token_expiry_sec: 1296000
+
+metrics:
+  prometheus_port: 9100
+
+console:
+  port: 7351
+  username: "admin"
+  password: "password"
+
+runtime:
+  js_entrypoint: "/build/index.js"
