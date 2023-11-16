@@ -107,7 +107,7 @@ export const matchLoop: nkruntime.MatchLoopFunction<State> = (
 		switch (message.opCode) {
 			case 'Update':
 				// update the player's state
-				message.data.position // etc.
+				const { position } = message.data() // use the data function to get the data
 				break
 			case 'Ready':
 				// update the player's ready state
