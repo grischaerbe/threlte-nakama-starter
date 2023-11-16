@@ -1,18 +1,16 @@
 import type { Presence } from '@heroiclabs/nakama-js'
 import { currentWritable, type CurrentWritable } from '@threlte/core'
 import {
-	TimeTrialClientOpCode,
 	TimeTrialMatchState,
-	TimeTrialServerOpCode,
 	type TimeTrialClientMessage,
-	type TimeTrialServerMessage
+	type TimeTrialServerMessage,
+	timeTrialClientOpCodes,
+	timeTrialServerOpCodes
 } from 'shared'
 import { AbstractMatchManager } from '../AbstractMatchManager'
 import { SocketManager } from '../SocketManager'
 
 export class TimeTrialMatchManager extends AbstractMatchManager<
-	typeof TimeTrialClientOpCode,
-	typeof TimeTrialServerOpCode,
 	TimeTrialClientMessage,
 	TimeTrialServerMessage
 > {
@@ -23,21 +21,21 @@ export class TimeTrialMatchManager extends AbstractMatchManager<
 	public players: Presence[] = []
 
 	constructor(matchId: string) {
-		super(matchId, SocketManager.socket, TimeTrialClientOpCode, TimeTrialServerOpCode)
+		super(matchId, SocketManager.socket, timeTrialClientOpCodes, timeTrialServerOpCodes)
 		this.matchState.set(TimeTrialMatchState.WarmUp)
 	}
 
 	protected processMessage<OpCode extends keyof TimeTrialServerMessage>(
 		message: OpCode extends keyof TimeTrialServerMessage
-			? { opcode: OpCode; data: TimeTrialServerMessage[OpCode] }
+			? TimeTrialServerMessage[OpCode] & { opCode: OpCode }
 			: never
 	): void {
 		// incoming server message! process it here with a switch statement, e.g.:
-		switch (message.opcode) {
-			case TimeTrialServerOpCode.GameUpdate:
-				this.matchState.set(message.data.matchState)
+		switch (message.opCode) {
+			case 'GameUpdate':
+				this.matchState.set(message.matchState)
 				break
-			// …
+
 			default:
 				break
 		}

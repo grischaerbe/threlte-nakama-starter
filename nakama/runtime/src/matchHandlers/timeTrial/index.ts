@@ -2,8 +2,8 @@
  * Example Match Handler: Time Trial
  */
 
-import { TimeTrialMatchState, TimeTrialServerOpCode } from 'shared'
-import { createServerMessage } from './utils'
+import { TimeTrialMatchState } from 'shared'
+import { createTimeTrialMessageUtils } from './createTimeTrialMessageUtils'
 
 type State = {
 	matchState: TimeTrialMatchState
@@ -15,8 +15,6 @@ type State = {
 }
 
 export const matchInit: nkruntime.MatchInitFunction<State> = (ctx, logger, nk, params) => {
-	// create the leaderboard
-
 	return {
 		label: 'match-label',
 		state: {
@@ -58,9 +56,12 @@ export const matchJoin: nkruntime.MatchJoinFunction<State> = (
 		}
 	})
 
+	// create the message utilities
+	const { createServerMessage } = createTimeTrialMessageUtils(nk, logger)
+
 	// update the joined players with the current game state
 	dispatcher.broadcastMessageDeferred(
-		...createServerMessage(TimeTrialServerOpCode.GameUpdate, {
+		...createServerMessage('GameUpdate', {
 			matchState: state.matchState
 		}),
 		presences
@@ -99,6 +100,24 @@ export const matchLoop: nkruntime.MatchLoopFunction<State> = (
 	messages
 ) => {
 	// update the game state here!
+	// create the message utilities
+	const { processClientMessages } = createTimeTrialMessageUtils(nk, logger)
+
+	processClientMessages(messages, (message) => {
+		switch (message.opCode) {
+			case 'Update':
+				// update the player's state
+				message.data.position // etc.
+				break
+			case 'Ready':
+				// update the player's ready state
+				message.data // etc.
+				break
+			default:
+				break
+		}
+	})
+
 	return {
 		state
 	}

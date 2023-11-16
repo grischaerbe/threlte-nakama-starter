@@ -4,27 +4,13 @@ export enum TimeTrialMatchState {
 	CoolDown = 2
 }
 
-export enum TimeTrialClientOpCode {
-	NoOp,
-	Ready
-}
-
-export enum TimeTrialServerOpCode {
-	NoOp,
-	GameUpdate,
-	MatchStarted,
-	MatchFinished,
-	MatchRestart
-}
-
 export type TimeTrialServerMessage = {
-	[TimeTrialServerOpCode.NoOp]: {}
-	[TimeTrialServerOpCode.GameUpdate]: {
+	GameUpdate: {
 		matchState: TimeTrialMatchState
 	}
-	[TimeTrialServerOpCode.MatchStarted]: {}
-	[TimeTrialServerOpCode.MatchFinished]: {}
-	[TimeTrialServerOpCode.MatchRestart]: {
+	MatchStarted: {}
+	MatchFinished: {}
+	MatchRestart: {
 		trackId: string
 		matchStartTime: number
 		matchEndTime: number
@@ -35,6 +21,20 @@ export type TimeTrialServerMessage = {
 }
 
 export type TimeTrialClientMessage = {
-	[TimeTrialClientOpCode.NoOp]: {}
-	[TimeTrialClientOpCode.Ready]: {}
+	Ready: {}
+	Update: {
+		position: number
+	}
+}
+
+export const timeTrialServerOpCodes: { [K in keyof TimeTrialServerMessage]: number } = {
+	GameUpdate: 1,
+	MatchFinished: 2,
+	MatchRestart: 3,
+	MatchStarted: 4
+}
+
+export const timeTrialClientOpCodes: { [K in keyof TimeTrialClientMessage]: number } = {
+	Ready: 1,
+	Update: 2
 }

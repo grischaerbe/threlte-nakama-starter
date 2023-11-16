@@ -1,37 +1,29 @@
 import type { Match, MatchData, MatchPresenceEvent, Presence, Socket } from '@heroiclabs/nakama-js'
-import { Nakama } from './Nakama'
-import { SessionManager } from './SessionManager'
-import { SocketManager } from './SocketManager'
-
-type AnyKey = string | number | symbol
 
 // Distributive conditional type
 type ServerMessageType<
-	ServerMessage extends Record<AnyKey, unknown>,
+	ServerMessage extends Record<string, unknown>,
 	OpCode extends keyof ServerMessage
 > = OpCode extends keyof ServerMessage
-	? {
-			opcode: OpCode
-			data: ServerMessage[OpCode]
+	? ServerMessage[OpCode] & {
+			opCode: OpCode
 	  }
 	: never
 
 /**
- * This is a class to extend actual MatchManagers from to support different
+ * This is an abstract class to extend actual MatchManagers from to support different
  * modes, states and OpCodes.
  */
 export abstract class AbstractMatchManager<
-	ClientOpCode,
-	ServerOpCode,
-	ClientMessage extends Record<AnyKey, unknown>,
-	ServerMessage extends Record<AnyKey, unknown>
+	ClientMessages extends Record<string, unknown>,
+	ServerMessages extends Record<string, unknown>
 > {
 	public matchId: string
 	public match: Match | undefined
 	public socket: Socket
 
-	public ClientOpCode: ClientOpCode
-	public ServerOpCode: ServerOpCode
+	private clientOpCodes: { [K in keyof ClientMessages]: number }
+	private inverseServerOpCodes: Map<number, keyof ServerMessages>
 
 	private textDecoder = new TextDecoder()
 	private sendOrReceiveMessages = false
@@ -39,17 +31,19 @@ export abstract class AbstractMatchManager<
 	constructor(
 		matchId: string,
 		socket: Socket,
-		ClientOpCode: ClientOpCode,
-		ServerOpCode: ServerOpCode
+		clientOpCodes: { [K in keyof ClientMessages]: number },
+		serverOpCodes: { [K in keyof ServerMessages]: number }
 	) {
 		this.socket = socket
 		this.matchId = matchId
-		this.ClientOpCode = ClientOpCode
-		this.ServerOpCode = ServerOpCode
+		this.clientOpCodes = clientOpCodes
+		this.inverseServerOpCodes = new Map(
+			Object.entries(serverOpCodes).map(([key, value]) => [value, key])
+		)
 	}
 
-	protected abstract processMessage<OpCode extends keyof ServerMessage>(
-		message: ServerMessageType<ServerMessage, OpCode>
+	protected abstract processMessage<OpCode extends keyof ServerMessages>(
+		message: ServerMessageType<ServerMessages, OpCode>
 	): void
 
 	protected abstract processJoins(joins: Presence[]): void
@@ -63,22 +57,23 @@ export abstract class AbstractMatchManager<
 	private onMatchData(matchData: MatchData) {
 		if (!this.sendOrReceiveMessages) return
 		const data = JSON.parse(this.textDecoder.decode(matchData.data))
-		const opcode = matchData.op_code as keyof ServerMessage
-		const message = {
-			data,
-			opcode
+		// opcode is a number and needs to be looked up in the opcodes map
+		const stringOpCode = this.inverseServerOpCodes.get(matchData.op_code)
+		if (!stringOpCode) {
+			console.warn(`Unknown OpCode: ${matchData.op_code}`)
+			return
 		}
-		this.processMessage(message as ServerMessageType<ServerMessage, typeof message.opcode>)
+		const message = {
+			...data,
+			opCode: stringOpCode
+		}
+		this.processMessage(message as ServerMessageType<ServerMessages, keyof ServerMessages>)
 	}
 
-	public async send<T extends keyof ClientMessage>(opcode: T, data: ClientMessage[T]) {
+	public async send<T extends keyof ClientMessages>(opCode: T, data: ClientMessages[T]) {
 		if (!this.sendOrReceiveMessages) return
-		const oc =
-			typeof opcode === 'number'
-				? opcode
-				: typeof opcode === 'symbol'
-				? parseInt(opcode.toString(), 10)
-				: parseInt(opcode, 10)
+		// opCode is string and needs to be looked up in the map
+		const oc = this.clientOpCodes[opCode]
 		await this.socket.sendMatchState(this.matchId, oc, JSON.stringify(data))
 	}
 
@@ -96,7 +91,7 @@ export abstract class AbstractMatchManager<
 		this.sendOrReceiveMessages = true
 		this.socket.onmatchdata = this.onMatchData.bind(this)
 		this.socket.onmatchpresence = this.onMatchPresence.bind(this)
-		this.match = await SocketManager.socket.joinMatch(this.matchId)
+		this.match = await this.socket.joinMatch(this.matchId)
 		if (this.match.presences && this.match.presences.length) {
 			this.processJoins(this.match.presences)
 		}
@@ -107,21 +102,8 @@ export abstract class AbstractMatchManager<
 		if (!this.match) return
 		// we set this early in order to prevent sending or receiving messages
 		this.sendOrReceiveMessages = false
-		await SocketManager.socket.leaveMatch(this.matchId)
+		await this.socket.leaveMatch(this.matchId)
 		this.match = undefined
 		this.onLeave()
-	}
-
-	public static async createMatch(trackId: string) {
-		const response = await Nakama.client.rpc(SessionManager.getSession(), 'create_match', {
-			trackId,
-			mode: 'time-trial'
-		})
-		const { matchId } = response.payload as { matchId: string }
-		return matchId
-	}
-
-	public static getMatchLeaderboardId(matchId: string) {
-		return `match:${matchId}`
 	}
 }

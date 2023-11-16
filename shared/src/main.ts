@@ -1,7 +1,7 @@
 export {
 	TimeTrialClientMessage,
-	TimeTrialClientOpCode,
 	TimeTrialServerMessage,
-	TimeTrialServerOpCode,
-	TimeTrialMatchState
+	TimeTrialMatchState,
+	timeTrialClientOpCodes,
+	timeTrialServerOpCodes
 } from './TimeTrial'
