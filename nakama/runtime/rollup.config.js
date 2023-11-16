@@ -19,7 +19,7 @@ export default {
 		json(),
 
 		// Resolve CommonJS modules
-		commonJS({ extensions, include: 'node_modules/**' }),
+		commonJS(),
 
 		// Transpile to ES5
 		babel({
