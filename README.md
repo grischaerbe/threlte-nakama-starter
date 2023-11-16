@@ -10,7 +10,7 @@ This is a starter project for realtime multiplayer games using [Threlte](https:/
 - Device or Google Authentication
 - Session and socket management
 - Realtime Matches
-  - `AbstractMatchManager` class to easily manage realtime matches with full type safety
+  - `AbstractMatchManager` abstract class to easily manage realtime matches with full type safety
     - `TimeTrialMatchManager` example implementation
     - `new TimeTrialMatchManager('matchId')` to create a match manager
     - `manager.join()` to join the match
