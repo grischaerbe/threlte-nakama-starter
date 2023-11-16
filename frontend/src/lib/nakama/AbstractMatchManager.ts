@@ -54,6 +54,30 @@ export abstract class AbstractMatchManager<
 
 	protected abstract onLeave(): void
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	private callbackMap = new Map<keyof ServerMessages, ((message: any) => void)[]>()
+	public on<EventName extends keyof ServerMessages>(
+		eventName: EventName,
+		callback: (message: ServerMessages[EventName]) => void
+	): void {
+		const callbacks = this.callbackMap.get(eventName)
+		if (callbacks) {
+			callbacks.push(callback)
+		} else {
+			this.callbackMap.set(eventName, [callback])
+		}
+	}
+	public off<EventName extends keyof ServerMessages>(
+		eventName: EventName,
+		callback: (message: ServerMessages[EventName]) => void
+	): void {
+		const callbacks = this.callbackMap.get(eventName)
+		if (!callbacks) return
+		const index = callbacks.indexOf(callback)
+		if (index === -1) return
+		callbacks.splice(index, 1)
+	}
+
 	private onMatchData(matchData: MatchData) {
 		if (!this.sendOrReceiveMessages) return
 		const data = JSON.parse(this.textDecoder.decode(matchData.data))
@@ -68,6 +92,10 @@ export abstract class AbstractMatchManager<
 			opCode: stringOpCode
 		}
 		this.processMessage(message as ServerMessageType<ServerMessages, keyof ServerMessages>)
+		const callbacks = this.callbackMap.get(stringOpCode)
+		if (callbacks) {
+			callbacks.forEach((callback) => callback(data))
+		}
 	}
 
 	public async send<T extends keyof ClientMessages>(opCode: T, data: ClientMessages[T]) {

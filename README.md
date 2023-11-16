@@ -15,5 +15,7 @@ This is a starter project for realtime multiplayer games using [Threlte](https:/
     - `new TimeTrialMatchManager('matchId')` to create a match manager
     - `manager.join()` to join the match
     - `manager.send('MessageType', { foo: 'bar' })` to send a message to the server
+    - `manager.on('MessageType', (message) => { console.log(message) })` to listen for messages from the server
+    - `manager.leave()` to leave the match
   - Shared types between server and client
   - Utilities to make processing incoming messages easier (client and server)
