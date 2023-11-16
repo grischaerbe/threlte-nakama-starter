@@ -1,6 +1,6 @@
 export {
-	TimeTrialClientMessage,
-	TimeTrialServerMessage,
+	type TimeTrialClientMessages,
+	type TimeTrialServerMessages,
 	TimeTrialMatchState,
 	timeTrialClientOpCodes,
 	timeTrialServerOpCodes

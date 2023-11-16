@@ -4,7 +4,7 @@ export enum TimeTrialMatchState {
 	CoolDown = 2
 }
 
-export type TimeTrialServerMessage = {
+export type TimeTrialServerMessages = {
 	GameUpdate: {
 		matchState: TimeTrialMatchState
 	}
@@ -20,21 +20,21 @@ export type TimeTrialServerMessage = {
 	}
 }
 
-export type TimeTrialClientMessage = {
+export type TimeTrialClientMessages = {
 	Ready: {}
 	Update: {
 		position: number
 	}
 }
 
-export const timeTrialServerOpCodes: { [K in keyof TimeTrialServerMessage]: number } = {
+export const timeTrialServerOpCodes: { [K in keyof TimeTrialServerMessages]: number } = {
 	GameUpdate: 1,
 	MatchFinished: 2,
 	MatchRestart: 3,
 	MatchStarted: 4
 }
 
-export const timeTrialClientOpCodes: { [K in keyof TimeTrialClientMessage]: number } = {
+export const timeTrialClientOpCodes: { [K in keyof TimeTrialClientMessages]: number } = {
 	Ready: 1,
 	Update: 2
 }

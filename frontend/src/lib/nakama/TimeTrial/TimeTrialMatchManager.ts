@@ -1,18 +1,18 @@
 import type { Presence } from '@heroiclabs/nakama-js'
 import { currentWritable, type CurrentWritable } from '@threlte/core'
 import {
-	TimeTrialMatchState,
-	type TimeTrialClientMessage,
-	type TimeTrialServerMessage,
 	timeTrialClientOpCodes,
-	timeTrialServerOpCodes
+	TimeTrialMatchState,
+	timeTrialServerOpCodes,
+	type TimeTrialClientMessages,
+	type TimeTrialServerMessages
 } from 'shared'
 import { AbstractMatchManager } from '../AbstractMatchManager'
 import { SocketManager } from '../SocketManager'
 
 export class TimeTrialMatchManager extends AbstractMatchManager<
-	TimeTrialClientMessage,
-	TimeTrialServerMessage
+	TimeTrialClientMessages,
+	TimeTrialServerMessages
 > {
 	// define state here
 	public matchState: CurrentWritable<TimeTrialMatchState> = currentWritable(
@@ -25,9 +25,9 @@ export class TimeTrialMatchManager extends AbstractMatchManager<
 		this.matchState.set(TimeTrialMatchState.WarmUp)
 	}
 
-	protected processMessage<OpCode extends keyof TimeTrialServerMessage>(
-		message: OpCode extends keyof TimeTrialServerMessage
-			? TimeTrialServerMessage[OpCode] & { opCode: OpCode }
+	protected processMessage<OpCode extends keyof TimeTrialServerMessages>(
+		message: OpCode extends keyof TimeTrialServerMessages
+			? TimeTrialServerMessages[OpCode] & { opCode: OpCode }
 			: never
 	): void {
 		// incoming server message! process it here with a switch statement, e.g.:
